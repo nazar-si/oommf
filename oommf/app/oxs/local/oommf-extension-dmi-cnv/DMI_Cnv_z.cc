@@ -143,7 +143,7 @@ void Oxs_DMI_Cnv_z::GetEnergy
           }
           if(Ms_inverse[j] != 0.0) {
             ThreeVector uij(0.,-1.,0);
-            sum += 0.25 * (D[i] + D[j]) * wgty * ((zu ^ uij) ^ spin[j]);
+            sum += 0.5 * D[i] * wgty * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -155,7 +155,7 @@ void Oxs_DMI_Cnv_z::GetEnergy
           }
           if(Ms_inverse[j] != 0.0) {
             ThreeVector uij(-1.,0.,0);
-            sum += 0.25 * (D[i] + D[j]) * wgtx * ((zu ^ uij) ^ spin[j]);
+            sum += 0.5 * D[i] * wgtx * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -167,7 +167,7 @@ void Oxs_DMI_Cnv_z::GetEnergy
           }
           if(Ms_inverse[j] != 0.0) {
             ThreeVector uij(0.,1.,0);
-            sum += 0.25 * (D[i] + D[j]) * wgty * ((zu ^ uij) ^ spin[j]);
+            sum += 0.5 * D[i] * wgty * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -179,7 +179,7 @@ void Oxs_DMI_Cnv_z::GetEnergy
           }
           if (Ms_inverse[j] != 0.0) {
             ThreeVector uij(1.,0.,0);
-            sum += 0.25 * (D[i] + D[j]) * wgtx * ((zu ^ uij) ^ spin[j]);
+            sum += 0.5 * D[i] * wgtx * ((zu ^ uij) ^ spin[j]);
           }
         }
 	
