@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/nazarsi/oommf/oommf/app/oxs/local/oommf-extension-dmi-cnv",
+      "program": "/Users/nazarsi/oommf/oommf/app/oxs/local/oommf-extension-dmi-cnv/build/Debug/outDebug"
+    }
+  ]
+}

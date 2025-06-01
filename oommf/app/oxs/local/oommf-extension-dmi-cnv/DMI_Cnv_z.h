@@ -19,7 +19,6 @@
 #ifndef _OXS_DMI_CNV_Z
 #define _OXS_DMI_CNV_Z
 
-#include "atlas.h"
 #include "key.h"
 #include "energy.h"
 #include "mesh.h"
@@ -32,12 +31,9 @@
 
 class Oxs_DMI_Cnv_z:public Oxs_Energy {
 private:
-  OC_INT4m A_size;
-  OC_REAL8m** D;
-  Oxs_Key<Oxs_Atlas> atlaskey;
-  Oxs_OwnedPointer<Oxs_Atlas> atlas;
+  Oxs_OwnedPointer<Oxs_ScalarField> D_init;
   mutable OC_INT4m mesh_id;
-  mutable Oxs_MeshValue<OC_INT4m> region_id;
+  mutable Oxs_MeshValue<OC_REAL8m> D;
 
   // Periodic boundaries?
   mutable int xperiodic;
