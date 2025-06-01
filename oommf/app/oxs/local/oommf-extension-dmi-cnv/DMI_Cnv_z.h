@@ -50,7 +50,6 @@ public:
   Oxs_DMI_Cnv_z(const char* name,     // Child instance id
 		    Oxs_Director* newdtr, // App director
 		    const char* argstr);  // MIF input block parameters
-  virtual ~Oxs_DMI_Cnv_z();
   virtual OC_BOOL Init();
 };
 
