@@ -34,6 +34,8 @@ private:
   Oxs_OwnedPointer<Oxs_ScalarField> D_init;
   mutable OC_INT4m mesh_id;
   mutable Oxs_MeshValue<OC_REAL8m> D;
+  
+  mutable int invert;
 
   // Periodic boundaries?
   mutable int xperiodic;

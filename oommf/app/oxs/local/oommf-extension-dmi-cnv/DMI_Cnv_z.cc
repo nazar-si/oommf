@@ -42,11 +42,15 @@ Oxs_DMI_Cnv_z::Oxs_DMI_Cnv_z(
     Oxs_Director *newdtr, // App director
     const char *argstr)   // MIF input block parameters
     : Oxs_Energy(name, newdtr, argstr),
+      invert(0),
       xperiodic(0), yperiodic(0), zperiodic(0),
       mesh_id(0)
 {
   // Process arguments
   OXS_GET_INIT_EXT_OBJECT("D", Oxs_ScalarField, D_init)
+  if (HasInitValue("invert")) {
+    invert = 1;
+  }
 
   VerifyAllInitArgsUsed();
 }
@@ -112,12 +116,15 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
   // OC_REAL8m wgtz = -1.0/(mesh->EdgeLengthZ()*mesh->EdgeLengthZ());
 
   OC_REAL8m hcoef = -2 / MU0;
+  OC_REAL8m sign = invert ? -1.0 : 1.0;
 
   ThreeVector uy_negative(0., -1., 0);
   ThreeVector uy_positive(0., 1., 0);
   ThreeVector ux_negative(-1., 0., 0);
   ThreeVector ux_positive(1., 0., 0);
   ThreeVector uz(0., 0., 1.);
+
+
 
   for (OC_INDEX z = 0; z < zdim; z++)
   {
@@ -202,8 +209,8 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
         }
 
-        field[i] = (hcoef * Msii) * sum;
-        energy[i] = (sum * base);
+        field[i] = sign * ((hcoef * Msii) * sum);
+        energy[i] = sign * (sum * base);
       }
     }
   }
