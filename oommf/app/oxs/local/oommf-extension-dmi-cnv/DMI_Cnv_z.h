@@ -26,6 +26,7 @@
 #include "simstate.h"
 #include "threevector.h"
 #include "rectangularmesh.h"
+#include "vectorfield.h"
 
 /* End includes */
 
