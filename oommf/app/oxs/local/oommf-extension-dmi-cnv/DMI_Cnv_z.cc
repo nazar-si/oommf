@@ -112,7 +112,6 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
   // OC_REAL8m wgtz = -1.0/(mesh->EdgeLengthZ()*mesh->EdgeLengthZ());
 
   OC_REAL8m hcoef = -2 / MU0;
-  OC_REAL8m sign = invert ? -1.0 : 1.0;
 
   ThreeVector uy_negative(0., -1., 0);
   ThreeVector uy_positive(0., 1., 0);
@@ -204,8 +203,8 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
         }
 
-        field[i] = sign * ((hcoef * Msii) * sum);
-        energy[i] = sign * (sum * base);
+        field[i] = (hcoef * Msii) * sum;
+        energy[i] = sum * base;
       }
     }
   }
