@@ -31,12 +31,10 @@
 
 class Oxs_DMI_Cnv_z:public Oxs_Energy {
 private:
-  Oxs_OwnedPointer<Oxs_ScalarField> D_init;
+  Oxs_OwnedPointer<Oxs_VectorField> D_init;
   mutable OC_INT4m mesh_id;
-  mutable Oxs_MeshValue<OC_REAL8m> D;
+  mutable Oxs_MeshValue<ThreeVector> D;
   
-  mutable int invert;
-
   // Periodic boundaries?
   mutable int xperiodic;
   mutable int yperiodic;

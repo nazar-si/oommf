@@ -42,15 +42,11 @@ Oxs_DMI_Cnv_z::Oxs_DMI_Cnv_z(
     Oxs_Director *newdtr, // App director
     const char *argstr)   // MIF input block parameters
     : Oxs_Energy(name, newdtr, argstr),
-      invert(0),
       xperiodic(0), yperiodic(0), zperiodic(0),
       mesh_id(0)
 {
   // Process arguments
-  OXS_GET_INIT_EXT_OBJECT("D", Oxs_ScalarField, D_init)
-  if (HasInitValue("invert")) {
-    invert = 1;
-  }
+  OXS_GET_INIT_EXT_OBJECT("D", Oxs_VectorField, D_init)
 
   VerifyAllInitArgsUsed();
 }
@@ -122,7 +118,6 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
   ThreeVector uy_positive(0., 1., 0);
   ThreeVector ux_negative(-1., 0., 0);
   ThreeVector ux_positive(1., 0., 0);
-  ThreeVector uz(0., 0., 1.);
 
 
 
@@ -157,7 +152,7 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * D[i] * inv_dy * ((uz ^ uy_negative) ^ spin[j]);
+            sum += 0.5 * inv_dy * ((D[i] ^ uy_negative) ^ spin[j]);
           }
         }
 
@@ -173,7 +168,7 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * D[i] * inv_dx * ((uz ^ ux_negative) ^ spin[j]);
+            sum += 0.5 * inv_dx * ((D[i] ^ ux_negative) ^ spin[j]);
           }
         }
 
@@ -189,7 +184,7 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * D[i] * inv_dy * ((uz ^ uy_positive) ^ spin[j]);
+            sum += 0.5 * inv_dy * ((D[i] ^ uy_positive) ^ spin[j]);
           }
         }
 
@@ -205,7 +200,7 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * D[i] * inv_dx * ((uz ^ ux_positive) ^ spin[j]);
+            sum += 0.5 * inv_dx * ((D[i] ^ ux_positive) ^ spin[j]);
           }
         }
 
