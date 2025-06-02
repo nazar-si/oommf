@@ -27,7 +27,7 @@
 #include "threevector.h"
 #include "rectangularmesh.h"
 #include "DMI_Cnv_z.h"
-#include "energy.h"		// Needed to make MSVC++ 5 happy
+#include "energy.h" // Needed to make MSVC++ 5 happy
 
 OC_USE_STRING;
 
@@ -36,69 +36,68 @@ OXS_EXT_REGISTER(Oxs_DMI_Cnv_z);
 
 /* End includes */
 
-
 // Constructor
 Oxs_DMI_Cnv_z::Oxs_DMI_Cnv_z(
-  const char* name,     // Child instance id
-  Oxs_Director* newdtr, // App director
-  const char* argstr)   // MIF input block parameters
-  : Oxs_Energy(name,newdtr,argstr),
-    xperiodic(0), yperiodic(0), zperiodic(0),
-    mesh_id(0)
+    const char *name,     // Child instance id
+    Oxs_Director *newdtr, // App director
+    const char *argstr)   // MIF input block parameters
+    : Oxs_Energy(name, newdtr, argstr),
+      xperiodic(0), yperiodic(0), zperiodic(0),
+      mesh_id(0)
 {
   // Process arguments
-  OXS_GET_INIT_EXT_OBJECT("D",Oxs_ScalarField, D_init)
+  OXS_GET_INIT_EXT_OBJECT("D", Oxs_ScalarField, D_init)
 
   VerifyAllInitArgsUsed();
 }
 
-void Oxs_DMI_Cnv_z::GetEnergy
-(const Oxs_SimState& state,
- Oxs_EnergyData& oed
- ) const
+void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
+                              Oxs_EnergyData &oed) const
 {
   // See if mesh has changed.
-  if(mesh_id !=  state.mesh->Id()) {
+  if (mesh_id != state.mesh->Id())
+  {
     // Setup region mapping
     mesh_id = 0; // Safety
-    D_init->FillMeshValue(state.mesh,D);
+    D_init->FillMeshValue(state.mesh, D);
     mesh_id = state.mesh->Id();
   }
-  const Oxs_MeshValue<ThreeVector>& spin = state.spin;
-  const Oxs_MeshValue<OC_REAL8m>& Ms_inverse = *(state.Ms_inverse);
+  const Oxs_MeshValue<ThreeVector> &spin = state.spin;
+  const Oxs_MeshValue<OC_REAL8m> &Ms_inverse = *(state.Ms_inverse);
 
   // Use supplied buffer space, and reflect that use in oed.
   oed.energy = oed.energy_buffer;
   oed.field = oed.field_buffer;
-  Oxs_MeshValue<OC_REAL8m>& energy = *oed.energy_buffer;
-  Oxs_MeshValue<ThreeVector>& field = *oed.field_buffer;
+  Oxs_MeshValue<OC_REAL8m> &energy = *oed.energy_buffer;
+  Oxs_MeshValue<ThreeVector> &field = *oed.field_buffer;
 
   // Check periodicity --------------------------------------------------------
-  const Oxs_CommonRectangularMesh* mesh
-    = dynamic_cast<const Oxs_CommonRectangularMesh*>(state.mesh);
-  if(mesh==NULL) {
-    String msg=String("Object ")
-      + String(state.mesh->InstanceName())
-      + String(" is not a rectangular mesh.");
-    throw Oxs_ExtError(this,msg);
+  const Oxs_CommonRectangularMesh *mesh = dynamic_cast<const Oxs_CommonRectangularMesh *>(state.mesh);
+  if (mesh == NULL)
+  {
+    String msg = String("Object ") + String(state.mesh->InstanceName()) + String(" is not a rectangular mesh.");
+    throw Oxs_ExtError(this, msg);
   }
 
-  const Oxs_RectangularMesh* rmesh
-    = dynamic_cast<const Oxs_RectangularMesh*>(mesh);
-  const Oxs_PeriodicRectangularMesh* pmesh
-    = dynamic_cast<const Oxs_PeriodicRectangularMesh*>(mesh);
-  if(pmesh!=NULL) {
+  const Oxs_RectangularMesh *rmesh = dynamic_cast<const Oxs_RectangularMesh *>(mesh);
+  const Oxs_PeriodicRectangularMesh *pmesh = dynamic_cast<const Oxs_PeriodicRectangularMesh *>(mesh);
+  if (pmesh != NULL)
+  {
     // Rectangular, periodic mesh
     xperiodic = pmesh->IsPeriodicX();
     yperiodic = pmesh->IsPeriodicY();
     zperiodic = pmesh->IsPeriodicZ();
-  } else if (rmesh!=NULL) {
-    xperiodic=0; yperiodic=0; zperiodic=0;
-  } else {
-    String msg=String("Unknown mesh type: \"")
-      + String(ClassName())
-      + String("\".");
-    throw Oxs_ExtError(this,msg.c_str());
+  }
+  else if (rmesh != NULL)
+  {
+    xperiodic = 0;
+    yperiodic = 0;
+    zperiodic = 0;
+  }
+  else
+  {
+    String msg = String("Unknown mesh type: \"") + String(ClassName()) + String("\".");
+    throw Oxs_ExtError(this, msg.c_str());
   }
   // --------------------------------------------------------------------------
 
@@ -108,77 +107,103 @@ void Oxs_DMI_Cnv_z::GetEnergy
   OC_INDEX xydim = xdim * ydim;
   // OC_INDEX xyzdim = xdim * ydim * zdim;
 
-  OC_REAL8m wgtx = 1.0/(mesh->EdgeLengthX());
-  OC_REAL8m wgty = 1.0/(mesh->EdgeLengthY());
-  //OC_REAL8m wgtz = -1.0/(mesh->EdgeLengthZ()*mesh->EdgeLengthZ());
+  OC_REAL8m inv_dx = 1.0 / (mesh->EdgeLengthX());
+  OC_REAL8m inv_dy = 1.0 / (mesh->EdgeLengthY());
+  // OC_REAL8m wgtz = -1.0/(mesh->EdgeLengthZ()*mesh->EdgeLengthZ());
 
-  OC_REAL8m hcoef = -2/MU0;
+  OC_REAL8m hcoef = -2 / MU0;
 
-  for(OC_INDEX z=0;z<zdim;z++) {
-    for(OC_INDEX y=0;y<ydim;y++) {
-      for(OC_INDEX x=0;x<xdim;x++) {
-        OC_INDEX i = mesh->Index(x,y,z); // Get base linear address
+  ThreeVector uy_negative(0., -1., 0);
+  ThreeVector uy_positive(0., 1., 0);
+  ThreeVector ux_negative(-1., 0., 0);
+  ThreeVector ux_positive(1., 0., 0);
+  ThreeVector uz(0., 0., 1.);
+
+  for (OC_INDEX z = 0; z < zdim; z++)
+  {
+    for (OC_INDEX y = 0; y < ydim; y++)
+    {
+      for (OC_INDEX x = 0; x < xdim; x++)
+      {
+        OC_INDEX i = mesh->Index(x, y, z); // Get base linear address
         ThreeVector base = spin[i];
         OC_REAL8m Msii = Ms_inverse[i];
-        if(Msii == 0.0) {
-          energy[i]=0.0;
-          field[i].Set(0.,0.,0.);
+        if (Msii == 0.0)
+        {
+          energy[i] = 0.0;
+          field[i].Set(0., 0., 0.);
           continue;
         }
-        ThreeVector sum(0.,0.,0.);
-        ThreeVector zu(0.,0.,1.);
+        ThreeVector sum(0., 0., 0.);
+
         OC_INDEX j;
 
-        if(y > 0 || yperiodic) {  // y- direction
-          if(y > 0) {
+        if (y > 0 || yperiodic)
+        { // y- direction
+          if (y > 0)
+          {
             j = i - xdim;
-          } else if (yperiodic) {
+          }
+          else if (yperiodic)
+          {
             j = i - xdim + xydim;
           }
-          if(Ms_inverse[j] != 0.0) {
-            ThreeVector uij(0.,-1.,0);
-            sum += 0.5 * D[j] * wgty * ((zu ^ uij) ^ spin[j]);
+          if (Ms_inverse[j] != 0.0)
+          {
+            sum += 0.5 * D[i] * inv_dy * ((uz ^ uy_negative) ^ spin[j]);
           }
         }
 
-        if(x > 0 || xperiodic) {  // x- direction
-          if(x > 0) {
-            j = i - 1;        // j = mesh->Index(x-1,y,z)
-          } else if (xperiodic) {
+        if (x > 0 || xperiodic)
+        { // x- direction
+          if (x > 0)
+          {
+            j = i - 1; // j = mesh->Index(x-1,y,z)
+          }
+          else if (xperiodic)
+          {
             j = i - 1 + xdim; // x == 0, j = Index(xdim-1,y,z);
           }
-          if(Ms_inverse[j] != 0.0) {
-            ThreeVector uij(-1.,0.,0);
-            sum += 0.5 * D[j] * wgtx * ((zu ^ uij) ^ spin[j]);
+          if (Ms_inverse[j] != 0.0)
+          {
+            sum += 0.5 * D[i] * inv_dx * ((uz ^ ux_negative) ^ spin[j]);
           }
         }
 
-        if(y < ydim - 1 || yperiodic) {  // y+ direction
-          if (y < ydim-1) {
+        if (y < ydim - 1 || yperiodic)
+        { // y+ direction
+          if (y < ydim - 1)
+          {
             j = i + xdim;
-          } else if (yperiodic) {
+          }
+          else if (yperiodic)
+          {
             j = i + xdim - xydim;
           }
-          if(Ms_inverse[j] != 0.0) {
-            ThreeVector uij(0.,1.,0);
-            sum += 0.5 * D[j] * wgty * ((zu ^ uij) ^ spin[j]);
+          if (Ms_inverse[j] != 0.0)
+          {
+            sum += 0.5 * D[i] * inv_dy * ((uz ^ uy_positive) ^ spin[j]);
           }
         }
 
-        if(x < xdim-1 || xperiodic) {  // x+ direction
-          if (x < xdim-1) {
+        if (x < xdim - 1 || xperiodic)
+        { // x+ direction
+          if (x < xdim - 1)
+          {
             j = i + 1;
-          } else if (xperiodic) {
+          }
+          else if (xperiodic)
+          {
             j = i + 1 - xdim;
           }
-          if (Ms_inverse[j] != 0.0) {
-            ThreeVector uij(1.,0.,0);
-            sum += 0.5 * D[j] * wgtx * ((zu ^ uij) ^ spin[j]);
+          if (Ms_inverse[j] != 0.0)
+          {
+            sum += 0.5 * D[i] * inv_dx * ((uz ^ ux_positive) ^ spin[j]);
           }
         }
-	
-	    field[i]  = (hcoef * Msii) * sum;
-	    energy[i] = (sum * base);
+
+        field[i] = (hcoef * Msii) * sum;
+        energy[i] = (sum * base);
       }
     }
   }
