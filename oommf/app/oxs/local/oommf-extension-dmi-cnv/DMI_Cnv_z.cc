@@ -107,18 +107,11 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
   OC_INDEX xydim = xdim * ydim;
   // OC_INDEX xyzdim = xdim * ydim * zdim;
 
-  OC_REAL8m inv_dx = 1.0 / (mesh->EdgeLengthX());
-  OC_REAL8m inv_dy = 1.0 / (mesh->EdgeLengthY());
+  OC_REAL8m wgtx = 1.0 / (mesh->EdgeLengthX());
+  OC_REAL8m wgty = 1.0 / (mesh->EdgeLengthY());
   // OC_REAL8m wgtz = -1.0/(mesh->EdgeLengthZ()*mesh->EdgeLengthZ());
 
   OC_REAL8m hcoef = -2 / MU0;
-
-  ThreeVector uy_negative(0., -1., 0);
-  ThreeVector uy_positive(0., 1., 0);
-  ThreeVector ux_negative(-1., 0., 0);
-  ThreeVector ux_positive(1., 0., 0);
-
-
 
   for (OC_INDEX z = 0; z < zdim; z++)
   {
@@ -136,7 +129,7 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           continue;
         }
         ThreeVector sum(0., 0., 0.);
-
+        ThreeVector zu(0., 0., 1.);
         OC_INDEX j;
 
         if (y > 0 || yperiodic)
@@ -151,7 +144,8 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * inv_dy * ((D[i] ^ uy_negative) ^ spin[j]);
+            ThreeVector uij(0., -1., 0);
+            sum += 0.5 * D[i].z * wgty * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -167,7 +161,8 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * inv_dx * ((D[i] ^ ux_negative) ^ spin[j]);
+            ThreeVector uij(-1., 0., 0);
+            sum += 0.5 * D[i].z * wgtx * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -183,7 +178,8 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * inv_dy * ((D[i] ^ uy_positive) ^ spin[j]);
+            ThreeVector uij(0., 1., 0);
+            sum += 0.5 * D[i].z * wgty * ((zu ^ uij) ^ spin[j]);
           }
         }
 
@@ -199,12 +195,13 @@ void Oxs_DMI_Cnv_z::GetEnergy(const Oxs_SimState &state,
           }
           if (Ms_inverse[j] != 0.0)
           {
-            sum += 0.5 * inv_dx * ((D[i] ^ ux_positive) ^ spin[j]);
+            ThreeVector uij(1., 0., 0);
+            sum += 0.5 * D[i].z * wgtx * ((zu ^ uij) ^ spin[j]);
           }
         }
 
         field[i] = (hcoef * Msii) * sum;
-        energy[i] = sum * base;
+        energy[i] = (sum * base);
       }
     }
   }
